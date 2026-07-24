@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大量科技 · 氣候風險與機會評估系統</title>
+    <!-- 引入 Tailwind CSS 並設定支援 dark mode -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {}
+                }
+            }
+        }
+    </script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif; 
+            transition: background 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            overflow-x: hidden; /* 防止 blob 溢出 */
+        }
+
+        /* 亮暗模式全域背景與文字顏色 */
+        body.light { background: #f8fafc; color: #1e293b; }
+        body.dark { background: #0f172a; color: #e2e8f0; }
+        
+        /* 升級版 Glass 特效自適應亮暗模式 */
+        .glass { 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 玻璃光澤反射效果 */
+        .glass::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-20deg);
+            transition: all 0.7s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .glass:hover::before { left: 200%; }
+
+        .light .glass {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08), inset 0 0 0 1px rgba(255,255,255,0.4);
+        }
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.45); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.05);
+        }
+        .light .glass:hover {
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.12), inset 0 0 0 1px rgba(255,255,255,0.6);
+            transform: translateY(-2px);
+        }
+        .dark .glass:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        /* 流體動畫背景 (Fluid Background Blobs) */
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+        @keyframes blob-float-alt {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-30px, 50px) scale(1.2); }
+            66% { transform: translate(20px, -20px) scale(0.8); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .blob-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1; overflow: hidden; pointer-events: none;
+        }
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.7; mix-blend-mode: multiply;
+        }
+        .dark .blob { mix-blend-mode: screen; opacity: 0.4; }
+        
+        .blob-1 {
+            top: -10%; left: -10%; width: 50vw; height: 50vw;
+            background: rgba(59,130,246,0.6); /* Blue */
+            animation: blob-float 20s ease-in-out infinite;
+        }
+        .blob-2 {
+            bottom: -20%; right: -10%; width: 60vw; height: 60vw;
+            background: rgba(16,185,129,0.5); /* Emerald */
+            animation: blob-float-alt 25s ease-in-out infinite;
+        }
+        .blob-3 {
+            top: 30%; left: 40%; width: 40vw; height: 40vw;
+            background: rgba(139,92,246,0.5); /* Violet */
+            animation: blob-float 22s ease-in-out infinite;
+        }
+
+        /* 滾動條美化以符合玻璃擬態 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+        .dark ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        
+        .dark .neon-blue { box-shadow: 0 0 25px rgba(59,130,246,0.4); }
+        .dark .neon-green { box-shadow: 0 0 25px rgba(34,211,151,0.4); }
+        .light .neon-blue { box-shadow: 0 0 25px rgba(59,130,246,0.25); }
+        .light .neon-green { box-shadow: 0 0 25px rgba(34,211,151,0.25); }
+        
+        .tab-active {
+            border-bottom: 3px solid #60a5fa;
+            color: #60a5fa;
+            position: relative;
+        }
+        .tab-active:after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #60a5fa;
+            border-radius: 50%;
+        }
+        
+        .option-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-card:hover { transform: translateY(-2px); }
+        .light .option-card:hover { background: rgba(0,0,0,0.02); }
+        .dark .option-card:hover { background: rgba(255,255,255,0.08); }
+
+        .option-card.selected {
+            border-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.5);
+        }
+        
+        .gold-row { border-left: 4px solid #facc15; }
+        .light .gold-row { background: linear-gradient(90deg, rgba(250,204,21,0.15), rgba(250,204,21,0.02)); }
+        .dark .gold-row { background: linear-gradient(90deg, rgba(250,204,21,0.15), rgba(250,204,21,0.05)); }
+        
+        .progress-bar { transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="dark"> <!-- 預設為暗色系 -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- GAS 後端網址設定 ---
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxjywDMl0o2n4WP_en-OZPfk_g507wxDGz7dRSHkvn0BUaaCRfJBbKk-Lrsr7LwX_f6/exec"; 
+
+        // --- 0. 員工資料表 ---
+        const employeesData = [
+            { id: "105", name: "系統管理員", isAdmin: true },
+            { id: "091014", name: "王作京" },
+            { id: "089013", name: "宋漢釧" },
+            { id: "108022", name: "李賢銘" },
+            { id: "107013", name: "林政緯" },
+            { id: "099061", name: "林麗君" },
+            { id: "095084", name: "高豪賢" },
+            { id: "111005", name: "陳昆佑" },
+            { id: "112001", name: "黃姿瑛" },
+            { id: "095030", name: "黃錦承" },
+            { id: "098004", name: "黃贏震" },
+            { id: "096044", name: "簡伯哲" },
+            { id: "089028", name: "帥蛋華" },
+            { id: "087006", name: "簡禎祈" }
+        ];
+
+        // --- 1. 定義 11 種不同子類別的專屬配色方案 ---
+        const categoryColorMap = {
+            "政府和法規": { bg: "#1e3a8a", text: "#ffffff", label: "政府和法規", name: "Gov & Reg" },       
+            "技術": { bg: "#0d9488", text: "#ffffff", label: "技術", name: "Technology" },               
+            "市場(轉型)": { bg: "#6d28d9", text: "#ffffff", label: "市場(轉型)", name: "Market (Trans)" }, 
+            "名譽": { bg: "#e11d48", text: "#ffffff", label: "名譽", name: "Reputation" },               
+            "立即性": { bg: "#ea580c", text: "#ffffff", label: "立即性", name: "Acute" },                 
+            "長期性": { bg: "#b45309", text: "#ffffff", label: "長期性", name: "Chronic" },               
+            "資源效率": { bg: "#059669", text: "#ffffff", label: "資源效率", name: "Resource Eff" },       
+            "能源來源": { bg: "#65a30d", text: "#ffffff", label: "能源來源", name: "Energy Source" },      
+            "產品和服務": { bg: "#0284c7", text: "#ffffff", label: "產品和服務", name: "Prod & Serv" },    
+            "市場(機會)": { bg: "#db2777", text: "#ffffff", label: "市場(機會)", name: "Market (Opp)" },   
+            "韌性": { bg: "#16a34a", text: "#ffffff", label: "韌性", name: "Resilience" }                  
+        };
+
+        const getCategoryKey = (type, category) => {
+            if (category === "市場") return type === "機會" ? "市場(機會)" : "市場(轉型)";
+            return category;
+        };
+
+        // --- 2. 20個氣候議題資料設定 ---
+        const rawQuestionsData = [
+            { id: 1, type: "轉型風險", category: "政府和法規", name: "碳費徵收與碳定價政策財務衝擊", desc: "提高溫室氣體排放定價。" },
+            { id: 2, type: "轉型風險", category: "政府和法規", name: "國家淨零排放法規與綠電合規挑戰", desc: "國內 2050 淨零碳排政策。" },
+            { id: 3, type: "轉型風險", category: "政府和法規", name: "永續揭露準則（IFRS S2）強制確信風險", desc: "國際財務報導準則（IFRS）強制揭露。" },
+            { id: 4, type: "轉型風險", category: "技術", name: "綠色低碳設備研發轉型失敗風險", desc: "對新技術的投資失敗。" },
+            { id: 5, type: "轉型風險", category: "技術", name: "低碳製造製程與設備轉型資本支出", desc: "低碳技術轉型的成本。" },
+            { id: 6, type: "轉型風險", category: "市場", name: "原物料與供應鏈碳溢價成本上漲", desc: "原物料成本上漲。" },
+            { id: 7, type: "轉型風險", category: "名譽", name: "永續承諾與減碳目標未達之品牌風險", desc: "未達成公開承諾永續目標。" },
+            { id: 8, type: "實體風險", category: "立即性", name: "颱風極端氣候對生產基地之實體破壞", desc: "颱風極端天氣事件嚴重程度提高。" },
+            { id: 9, type: "實體風險", category: "立即性", name: "全球極端氣候引發價值鏈與物流中斷", desc: "因極端氣候導致供應鏈中斷。" },
+            { id: 10, type: "實體風險", category: "長期性", name: "氣候變遷致區域乾旱與水資源短缺", desc: "平均氣溫上升。" },
+            { id: 11, type: "實體風險", category: "長期性", name: "沿海低窪地區淹沒與海岸侵蝕加劇", desc: "海平面上升。" },
+            { id: 12, type: "機會", category: "資源效率", name: "精密製造產線低碳能源之導入", desc: "採用綠能的能源。" },
+            { id: 13, type: "機會", category: "資源效率", name: "製程廢棄物回收與循環經濟模式", desc: "回收再利用。" },
+            { id: 14, type: "機會", category: "資源效率", name: "廠區與價值鏈水資源管理優化", desc: "減少用水量和耗水量。" },
+            { id: 15, type: "機會", category: "能源來源", name: "自建再生能源與綠電配額策略", desc: "使用低碳能源。" },
+            { id: 16, type: "機會", category: "產品和服務", name: "創新研發綠色低碳智能設備產品", desc: "開發或增加低碳商品和服務。" },
+            { id: 17, type: "機會", category: "產品和服務", name: "導入智慧能耗監測與預測維護服務", desc: "開發新產品和服務的研發與創新。" },
+            { id: 18, type: "機會", category: "市場", name: "切入全球半導體與 PCB 綠色供應鏈", desc: "進入新市場。" },
+            { id: 19, type: "機會", category: "韌性", name: "參與再生能源投資與綠色轉型推動", desc: "參與可再生能源項目並採用節能措施。" },
+            { id: 20, type: "機會", category: "韌性", name: "多軌化在地供應鏈與多樣化能源布局", desc: "能源替代/多元化。" }
+        ];
+
+        const questionsData = rawQuestionsData.map((q, idx) => ({ ...q, letter: String.fromCharCode(65 + idx) }));
+
+        const scoreDefinitions = {
+            risk: {
+                image: {
+                    5: "國際媒體負面報導，打擊公司形象。",
+                    4: "國內媒體負面報導，打擊公司形象。",
+                    3: "社群媒體負面報導，打擊公司形象。",
+                    2: "區域性媒體負面報導，打擊公司形象。",
+                    1: "幾乎沒有媒體負面報導。"
+                },
+                biz: {
+                    5: "對集團帶來商業策略與營運影響。",
+                    4: "對母公司帶來商業策略與營運影響。",
+                    3: "對母公司之特定機構（總公司/營運處/ 分公司）帶來商業策略與營運影響。",
+                    2: "對特定部門帶來商業策略與營運影響。",
+                    1: "幾乎沒有影響。"
+                },
+                chain: {
+                    5: "有80% 以上供應鏈與價值鏈關注本項議題。",
+                    4: "有50~80% 供應鏈與價值鏈關注本項議題。",
+                    3: "有30~50% 供應鏈與價值鏈關注本項議題。",
+                    2: "有10~30% 供應鏈與價值鏈關注本項議題。",
+                    1: "幾乎沒有人關注。"
+                }
+            },
+            opp: {
+                image: {
+                    5: "國際媒體正面報導，提升公司形象。",
+                    4: "國內媒體正面報導，提升公司形象。",
+                    3: "社群媒體正面報導，提升公司形象。",
+                    2: "區域性媒體正面報導，提升公司形象。",
+                    1: "幾乎沒有媒體正面報導。"
+                },
+                biz: {
+                    5: "對集團帶來商業策略與營運影響。",
+                    4: "對母公司帶來商業策略與營運影響。",
+                    3: "對母公司之特定機構（總公司/營運處/ 分公司）帶來商業策略與營運影響。",
+                    2: "對特定部門帶來商業策略與營運影響。",
+                    1: "幾乎沒有影響。"
+                },
+                chain: {
+                    5: "有80% 以上供應鏈與價值鏈關注本項議題。",
+                    4: "有50~80% 供應鏈與價值鏈關注本項議題。",
+                    3: "有30~50% 供應鏈與價值鏈關注本項議題。",
+                    2: "有10~30% 供應鏈與價值鏈關注本項議題。",
+                    1: "幾乎沒有人關注。"
+                }
+            },
+            time: {
+                5: "【當年度(2026年)】",
+                4: "【下一年度(2027年)】",
+                3: "【短期(2027年)】",
+                2: "【中期(2028-2030年)】",
+                1: "【長期(2031-2050年)】"
+            }
+        };
+
+        // ==================== 元件（已優化 UI 支援雙主題） ====================
+
+        const LoginView = ({ onLogin }) => {
+            const [inputId, setInputId] = useState("");
+            const [error, setError] = useState("");
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const emp = employeesData.find(e => e.id === inputId.trim());
+                if (emp) onLogin(emp);
+                else setError("找不到此員工代碼，請確認後重新輸入");
+            };
+
+            return (
+                <div className="min-h-[85vh] flex items-center justify-center p-6 animate-fade-in-up">
+                    <div className="glass max-w-md w-full p-10 rounded-3xl neon-blue relative overflow-hidden">
+                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/20 rounded-full filter blur-3xl pointer-events-none"></div>
+                        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-violet-500/20 rounded-full filter blur-3xl pointer-events-none"></div>
+                        <div className="text-center mb-10 relative z-10">
+                            <div className="mx-auto w-24 h-24 bg-white/10 dark:bg-slate-800/50 rounded-2xl flex items-center justify-center mb-6 shadow-xl overflow-hidden p-2 border border-slate-200 dark:border-white/10">
+                                <img src="https://lh3.googleusercontent.com/d/1w_oN7415ADkFWUAMJtuNp7WG5JxCJcRH" alt="Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white">氣候風險與機會評估系統</h1>
+                            <p className="text-slate-500 dark:text-slate-400 mt-2">大量科技 永續評估系統</p>
+                        </div>
+                        <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+                            <input 
+                                type="text" 
+                                value={inputId}
+                                onChange={(e) => { setInputId(e.target.value); setError(""); }}
+                                placeholder="輸入工號" 
+                                className="w-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-300 dark:border-white/20 focus:border-blue-400 dark:focus:border-blue-400 rounded-2xl px-6 py-5 text-2xl text-center placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none text-slate-800 dark:text-white transition-all focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                            />
+                            {error && <p className="text-rose-500 dark:text-red-400 text-center text-sm font-medium">{error}</p>}
+                            <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-violet-600 hover:from-blue-400 hover:to-violet-500 text-white py-5 rounded-2xl font-semibold text-lg transition-all active:scale-95 shadow-lg shadow-blue-500/30 border border-white/20">
+                                進入評估
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const WelcomeView = ({ user, onStart, onViewAdminResult }) => (
+            <div className="min-h-[85vh] flex items-center justify-center p-6 animate-fade-in-up">
+                <div className="glass max-w-3xl w-full p-12 rounded-3xl text-center shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-emerald-400 to-teal-400"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none"></div>
+                    <div className="mb-8 text-6xl drop-shadow-lg relative z-10">🌡️</div>
+                    <h1 className="text-4xl font-bold mb-4 text-slate-800 dark:text-white tracking-wide relative z-10">氣候變遷風險與機會評估</h1>
+                    <p className="text-2xl text-emerald-600 dark:text-emerald-400 mb-8 font-medium relative z-10">歡迎，{user.name}</p>
+                    <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed mb-12 relative z-10">
+                        透過 20 項關鍵議題，協助公司掌握轉型風險、實體風險與永續機會。
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-6 justify-center items-center relative z-10">
+                        <button onClick={onStart} className="w-full sm:w-auto relative z-10 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white px-10 py-5 rounded-full text-xl font-bold transition-all active:scale-95 shadow-[0_10px_30px_rgba(16,185,129,0.3)] border border-white/20 overflow-hidden group">
+                            <span className="relative z-10">開始評估 →</span>
+                            <div className="absolute inset-0 h-full w-full bg-white/20 scale-x-0 group-hover:scale-x-100 transform origin-left transition-transform duration-300"></div>
+                        </button>
+                        <button onClick={onViewAdminResult} className="w-full sm:w-auto relative z-10 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white px-10 py-5 rounded-full text-xl font-bold transition-all active:scale-95 shadow-[0_10px_30px_rgba(59,130,246,0.3)] border border-white/20 overflow-hidden group">
+                            <span className="relative z-10">查看團隊綜合結果 📊</span>
+                            <div className="absolute inset-0 h-full w-full bg-white/20 scale-x-0 group-hover:scale-x-100 transform origin-left transition-transform duration-300"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const QuestionView = ({ question, qIndex, totalQs, currentAnswers, onSaveAnswers, onPrevQuestion }) => {
+            const [localAns, setLocalAns] = useState({ image: null, biz: null, chain: null, time: null });
+            const [activeTab, setActiveTab] = useState('image');
+            const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
+
+            useEffect(() => {
+                setLocalAns(currentAnswers || { image: null, biz: null, chain: null, time: null });
+                setActiveTab('image');
+                setIsAutoTransitioning(false);
+            }, [question.id, currentAnswers]);
+
+            const isOpp = question.type === "機會";
+            const defs = isOpp ? scoreDefinitions.opp : scoreDefinitions.risk;
+            const tabs = [
+                { id: 'image', title: '企業形象與商譽' },
+                { id: 'biz', title: '商業策略與營運' },
+                { id: 'chain', title: '供應鏈關注度' },
+                { id: 'time', title: '發生急迫性' }
+            ];
+
+            const handleSelect = (val) => {
+                if (isAutoTransitioning) return;
+                const newAns = { ...localAns, [activeTab]: val };
+                setLocalAns(newAns);
+
+                const currIdx = tabs.findIndex(t => t.id === activeTab);
+                if (currIdx < 3) {
+                    setTimeout(() => setActiveTab(tabs[currIdx + 1].id), 200);
+                } else if (newAns.image && newAns.biz && newAns.chain && newAns.time) {
+                    setIsAutoTransitioning(true);
+                    setTimeout(() => onSaveAnswers(newAns), 600);
+                }
+            };
+
+            const isAllAnswered = Object.values(localAns).every(v => v !== null);
+            const catKey = getCategoryKey(question.type, question.category);
+            const badge = categoryColorMap[catKey] || { bg: "#64748b", text: "#fff" };
+
+            return (
+                <div className="max-w-7xl mx-auto px-4 pb-20 animate-fade-in-up">
+                    {/* 頂部進度 */}
+                    <div className="flex justify-between items-center mb-8 text-sm">
+                        <div className="flex items-center gap-3">
+                            <span className="px-4 py-1.5 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white rounded-full font-medium">議題 {qIndex + 1} / {totalQs}</span>
+                            <div className="h-2 w-48 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden hidden sm:block">
+                                <div className="progress-bar h-full bg-gradient-to-r from-blue-500 to-violet-500 dark:from-blue-400 dark:to-violet-400" style={{width: `${((qIndex+1)/totalQs)*100}%`}}></div>
+                            </div>
+                        </div>
+                        {qIndex > 0 && (
+                            <button onClick={onPrevQuestion} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                                ← 上一題
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="grid lg:grid-cols-12 gap-8 relative">
+                        {/* 處理中遮罩 */}
+                        {isAutoTransitioning && (
+                            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/50 backdrop-blur-sm z-20 flex items-center justify-center rounded-3xl">
+                                <div className="text-center p-8 glass rounded-2xl">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 dark:border-slate-700 border-t-emerald-500 dark:border-t-emerald-400 mx-auto mb-4"></div>
+                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">{qIndex === totalQs - 1 ? '儲存中...' : '前往下一題...'}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 左側 議題資訊 */}
+                        <div className="lg:col-span-5">
+                            <div className="glass rounded-3xl p-8 lg:sticky lg:top-28 z-10">
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                                <div className="flex flex-wrap gap-3 mb-6 relative z-10">
+                                    <span className="px-4 py-1.5 bg-slate-800 text-white rounded-lg text-sm font-bold shadow-md">代號 {question.letter}</span>
+                                    <span className={`px-4 py-1.5 rounded-lg text-sm font-bold shadow-md ${isOpp ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300'}`}>{question.type}</span>
+                                    <span className="px-4 py-1.5 rounded-lg text-sm font-bold shadow-md text-white" style={{backgroundColor: badge.bg}}>{question.category}</span>
+                                </div>
+                                <h2 className="text-3xl font-bold leading-tight mb-6 text-slate-800 dark:text-white relative z-10">{question.name}</h2>
+                                <div className="bg-slate-50/80 dark:bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-white/5 shadow-inner relative z-10">
+                                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">議題描述</h3>
+                                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">{question.desc}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 右側 評分面板 */}
+                        <div className="lg:col-span-7">
+                            <div className="glass rounded-3xl p-6 sm:p-8 relative z-10">
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                                <div className="flex border-b border-slate-200 dark:border-white/10 mb-8 overflow-x-auto hide-scrollbar pb-1 gap-2 relative z-10">
+                                    {tabs.map(tab => (
+                                        <button 
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex-1 pb-4 px-4 text-sm font-bold whitespace-nowrap transition-all ${activeTab === tab.id ? 'tab-active' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                {tab.title}
+                                                {localAns[tab.id] && <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-4 min-h-[450px]">
+                                    {(() => {
+                                        const currentDef = activeTab === 'time' ? scoreDefinitions.time : defs[activeTab];
+                                        return [5,4,3,2,1].map(score => (
+                                            <div 
+                                                key={score} 
+                                                onClick={() => handleSelect(score)}
+                                                className={`option-card p-5 sm:p-6 rounded-2xl border cursor-pointer flex items-center gap-4 sm:gap-6 relative overflow-hidden backdrop-blur-sm transition-all duration-300 ${localAns[activeTab] === score ? 'selected transform scale-[1.02]' : 'bg-white/40 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'}`}
+                                            >
+                                                {localAns[activeTab] === score && <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent"></div>}
+                                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl sm:text-3xl font-bold transition-all duration-300 ${localAns[activeTab] === score ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/40 scale-110' : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400'}`}>
+                                                    {score}
+                                                </div>
+                                                <div className="flex-1 text-slate-700 dark:text-slate-200 text-sm sm:text-base leading-relaxed relative z-10 font-medium">{currentDef[score]}</div>
+                                            </div>
+                                        ));
+                                    })()}
+                                </div>
+
+                                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex justify-between items-center relative z-10">
+                                    <div className="text-sm font-medium text-slate-500">{isAllAnswered ? '✨ 已完成本題評估' : '請完成所有分頁評估'}</div>
+                                    <button 
+                                        onClick={() => onSaveAnswers(localAns)}
+                                        disabled={!isAllAnswered}
+                                        className={`px-8 sm:px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${isAllAnswered ? 'bg-gradient-to-r from-blue-500 to-violet-500 text-white hover:scale-105 shadow-[0_10px_25px_rgba(99,102,241,0.4)] border border-white/20' : 'bg-slate-200/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed backdrop-blur-md border border-slate-200 dark:border-white/5'}`}
+                                    >
+                                        {qIndex === totalQs - 1 ? '完成所有評估' : '下一題 →'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CompletionView = ({ user, onNext }) => (
+            <div className="min-h-[80vh] flex items-center justify-center p-6 animate-fade-in-up">
+                <div className="glass max-w-2xl w-full p-12 rounded-3xl text-center neon-green relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none"></div>
+                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-teal-400"></div>
+                    <div className="mb-6 text-7xl drop-shadow-xl animate-bounce relative z-10">🎉</div>
+                    <h1 className="text-4xl font-extrabold mb-4 text-slate-800 dark:text-white relative z-10">已完成評估！</h1>
+                    <p className="text-xl text-slate-600 dark:text-slate-300 mb-10 leading-relaxed font-medium relative z-10">
+                        辛苦了，<span className="text-emerald-600 dark:text-emerald-400 font-bold">{user.name}</span>！<br/>
+                        您已成功完成 20 項氣候變遷議題的評估。<br/>
+                        請直接進入查看結果。
+                    </p>
+                    <button onClick={onNext} className="relative z-10 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white px-10 py-5 rounded-full text-xl font-bold transition-all active:scale-95 shadow-[0_10px_30px_rgba(16,185,129,0.4)] border border-white/20">
+                        查看團隊綜合結果 👉
+                    </button>
+                </div>
+            </div>
+        );
+
+        const AdminHomeView = ({ submissions, onGoResult, onGoScatter, onGoDetail, onDelete, onExport, isAdmin, onBack }) => {
+            const [selectedIds, setSelectedIds] = useState([]);
+            const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+            const handleSelectAll = (e) => {
+                if (e.target.checked) setSelectedIds(submissions.map(s => s.userId));
+                else setSelectedIds([]);
+            };
+
+            const handleSelectOne = (userId) => {
+                setSelectedIds(prev => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
+            };
+
+            const confirmDelete = () => {
+                onDelete(selectedIds);
+                setSelectedIds([]);
+                setShowDeleteModal(false);
+            };
+
+            return (
+                <div className="max-w-6xl mx-auto px-4 pb-20 animate-fade-in-up">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                        <div className="text-center sm:text-left">
+                            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-slate-800 dark:text-white">
+                                {isAdmin ? '管理員總覽面板' : '團隊綜合總覽面板'} 
+                                <span className="text-xl text-slate-500 font-normal ml-2">{isAdmin ? 'Admin Dashboard' : 'Team Dashboard'}</span>
+                            </h2>
+                            <p className="text-slate-600 dark:text-slate-400 text-lg">目前系統已收集到 <span className="text-emerald-600 dark:text-emerald-400 font-bold text-2xl mx-1">{submissions.length}</span> 份有效問卷。</p>
+                        </div>
+                        {!isAdmin && onBack && (
+                            <button onClick={onBack} className="px-6 py-3 rounded-xl font-semibold bg-white/40 hover:bg-white/60 text-slate-700 dark:bg-slate-700/40 dark:hover:bg-slate-600/60 dark:text-white backdrop-blur-md border border-slate-200 dark:border-white/10 transition-all shadow-sm shrink-0">
+                                ← 返回開始畫面
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6 mb-12">
+                        <div onClick={onGoResult} className="glass p-8 rounded-3xl cursor-pointer hover:neon-blue transition-all duration-300 group flex flex-col items-center sm:items-start relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="text-5xl mb-5 group-hover:scale-125 group-hover:-rotate-12 transition-all duration-300 relative z-10">📊</div>
+                            <h3 className="text-2xl font-bold mb-2 text-slate-800 dark:text-white relative z-10">氣候議題排序結果</h3>
+                            <p className="text-slate-600 dark:text-slate-300 text-center sm:text-left relative z-10">查看所有員工評分的平均加總排序與重大性列表</p>
+                        </div>
+                        <div onClick={onGoScatter} className="glass p-8 rounded-3xl cursor-pointer hover:neon-green transition-all duration-300 group flex flex-col items-center sm:items-start relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="text-5xl mb-5 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 relative z-10">🎯</div>
+                            <h3 className="text-2xl font-bold mb-2 text-slate-800 dark:text-white relative z-10">風險與機會散佈圖</h3>
+                            <p className="text-slate-600 dark:text-slate-300 text-center sm:text-left relative z-10">以四象限圖表檢視整體氣候風險與機會之分布</p>
+                        </div>
+                    </div>
+
+                    <div className="glass rounded-3xl overflow-hidden shadow-2xl relative z-10">
+                        <div className="p-6 bg-white/40 dark:bg-slate-800/60 backdrop-blur-md border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-white">員工填寫紀錄</h3>
+                            <div className="flex gap-3">
+                                {isAdmin && onExport && (
+                                    <button onClick={onExport} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
+                                        匯出 XLSX
+                                    </button>
+                                )}
+                                {isAdmin && selectedIds.length > 0 && (
+                                    <button onClick={() => setShowDeleteModal(true)} className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
+                                        刪除選取 ({selectedIds.length})
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[600px]">
+                                <thead>
+                                    <tr className="bg-slate-200/50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 text-sm uppercase tracking-wider">
+                                        {isAdmin && (
+                                            <th className="p-5 pl-8 text-center w-16">
+                                                <input type="checkbox" className="w-4 h-4 cursor-pointer" 
+                                                       checked={submissions.length > 0 && selectedIds.length === submissions.length}
+                                                       onChange={handleSelectAll} />
+                                            </th>
+                                        )}
+                                        <th className={`p-5 font-semibold ${!isAdmin ? 'pl-8' : ''}`}>項次</th>
+                                        <th className="p-5 font-semibold">姓名</th>
+                                        <th className="p-5 font-semibold text-center">工號</th>
+                                        <th className="p-5 font-semibold text-center">填寫時間</th>
+                                        <th className="p-5 pr-8 font-semibold text-right">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {submissions.length === 0 ? (
+                                        <tr><td colSpan={isAdmin ? "6" : "5"} className="p-10 text-center text-slate-500">目前尚無填寫紀錄</td></tr>
+                                    ) : (
+                                        submissions.map((sub, idx) => (
+                                            <tr key={idx} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                                {isAdmin && (
+                                                    <td className="p-5 pl-8 text-center">
+                                                        <input type="checkbox" className="w-4 h-4 cursor-pointer"
+                                                               checked={selectedIds.includes(sub.userId)}
+                                                               onChange={() => handleSelectOne(sub.userId)} />
+                                                    </td>
+                                                )}
+                                                <td className={`p-5 text-slate-500 font-medium ${!isAdmin ? 'pl-8' : ''}`}>{idx + 1}</td>
+                                                <td className="p-5 font-bold text-emerald-600 dark:text-emerald-400">{sub.userName}</td>
+                                                <td className="p-5 text-center text-slate-700 dark:text-slate-300 font-mono">{sub.userId}</td>
+                                                <td className="p-5 text-center text-slate-500 dark:text-slate-400 text-sm">{new Date(sub.timestamp).toLocaleString('zh-TW')}</td>
+                                                <td className="p-5 pr-8 text-right">
+                                                    <button onClick={() => onGoDetail(sub)} className="bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors">
+                                                        詳細分數
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* 刪除確認彈窗 */}
+                    {showDeleteModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-md px-4 animate-fade-in-up">
+                            <div className="glass p-8 rounded-3xl max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-center border border-white/20 bg-white/70 dark:bg-slate-800/70">
+                                <div className="text-5xl mb-4 drop-shadow-md">⚠️</div>
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">確定要刪除嗎？</h3>
+                                <p className="text-slate-600 dark:text-slate-400 mb-8 font-medium">將刪除選定的 {selectedIds.length} 筆紀錄，員工將需要重新進行評估，此操作無法復原。</p>
+                                <div className="flex gap-4 justify-center">
+                                    <button onClick={() => setShowDeleteModal(false)} className="px-6 py-3 rounded-xl font-semibold bg-slate-200/50 hover:bg-slate-300/50 text-slate-700 dark:bg-slate-700/50 dark:hover:bg-slate-600/50 dark:text-white backdrop-blur-sm transition-all w-1/2">
+                                        取消
+                                    </button>
+                                    <button onClick={confirmDelete} className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white shadow-lg shadow-rose-500/30 transition-all w-1/2 border border-white/20">
+                                        確認刪除
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ResultListView = ({ avgAnswers, questions, numSubmissions, onNext, onCompare, onBack, hideCompare }) => {
+            const processedData = questions.map(q => {
+                const ans = avgAnswers[q.id] || { image: 0, biz: 0, chain: 0, time: 0 };
+                const impactRaw = (ans.image + ans.biz + ans.chain) / 3;
+                return {
+                    ...q,
+                    impactScore: impactRaw.toFixed(1),
+                    timeScore: ans.time.toFixed(1),
+                    sortValue: (impactRaw * 10) + ans.time 
+                };
+            });
+
+            const risks = processedData.filter(q => q.type.includes("風險")).sort((a, b) => b.sortValue - a.sortValue);
+            const opps = processedData.filter(q => q.type === "機會").sort((a, b) => b.sortValue - a.sortValue);
+
+            const renderTable = (title, data, highlightCount) => (
+                <div className="glass rounded-3xl p-1 sm:p-6 mb-10 overflow-hidden shadow-xl animate-fade-in-up">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-6 text-slate-800 dark:text-white px-4 pt-4">{title}</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left min-w-[700px]">
+                            <thead>
+                                <tr className="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-sm">
+                                    <th className="p-4 w-16 text-center font-semibold rounded-tl-xl">排名</th>
+                                    <th className="p-4 w-20 text-center font-semibold">代號</th>
+                                    <th className="p-4 font-semibold">議題</th>
+                                    <th className="p-4 w-32 text-center font-semibold">衝擊程度</th>
+                                    <th className="p-4 w-32 text-center font-semibold rounded-tr-xl">急迫性</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((item, index) => {
+                                    const isHigh = index < highlightCount;
+                                    const catKey = getCategoryKey(item.type, item.category);
+                                    const badgeColor = categoryColorMap[catKey] || { bg: "#eee", text: "#333" };
+                                    return (
+                                        <tr key={item.id} className={`border-b border-slate-200 dark:border-white/5 ${isHigh ? 'gold-row' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                                            <td className={`p-4 text-center font-bold ${isHigh ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`}>{index + 1}</td>
+                                            <td className="p-4 text-center">
+                                                <span className="inline-block px-3 py-1 text-xs font-bold text-white bg-slate-700 rounded-md shadow-inner">{item.letter}</span>
+                                            </td>
+                                            <td className="p-4 text-slate-800 dark:text-slate-200 font-medium">
+                                                <span className="inline-block text-xs font-bold px-2.5 py-0.5 rounded-md mr-3 text-white shadow-sm" style={{ backgroundColor: badgeColor.bg }}>{item.category}</span>
+                                                {item.name}
+                                            </td>
+                                            <td className="p-4 text-center font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/5">{item.impactScore}</td>
+                                            <td className="p-4 text-center font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/5">{item.timeScore}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="max-w-6xl mx-auto px-4 pb-20 animate-fade-in-up">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+                        <div>
+                            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-slate-800 dark:text-white">整體平均：議題排序結果</h2>
+                            <p className="text-slate-600 dark:text-slate-400 text-lg">目前已有 <span className="text-emerald-600 dark:text-emerald-400 font-bold mx-1">{numSubmissions}</span> 位同仁完成填寫，此表為全體平均數據。</p>
+                        </div>
+                        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+                            {onBack && <button onClick={onBack} className="flex-1 md:flex-none px-6 py-3 rounded-xl font-semibold bg-white/40 hover:bg-white/60 text-slate-700 dark:bg-slate-700/40 dark:hover:bg-slate-600/60 dark:text-white backdrop-blur-md border border-slate-200 dark:border-white/10 transition-all shadow-sm">返回首頁</button>}
+                            {!hideCompare && onCompare && <button onClick={onCompare} className="flex-1 md:flex-none px-6 py-3 rounded-xl font-semibold bg-violet-500/10 text-violet-700 hover:bg-violet-600 hover:text-white dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500 border border-violet-500/20 backdrop-blur-sm transition-all shadow-lg">個人 vs 團隊比對</button>}
+                            {onNext && <button onClick={onNext} className="flex-1 md:flex-none px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white shadow-[0_8px_20px_rgba(79,70,229,0.3)] border border-white/20 transition-all hover:scale-105">查看散佈圖矩陣</button>}
+                        </div>
+                    </div>
+                    {renderTable("風險議題排序 (高亮標示前 7 項)", risks, 7)}
+                    {renderTable("機會議題排序 (高亮標示前 2 項)", opps, 2)}
+                </div>
+            );
+        };
+
+        const ScatterChartView = ({ avgAnswers, questions, numSubmissions, onBack, onCompare, hideCompare, theme }) => {
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            useEffect(() => {
+                if (chartInstance.current) chartInstance.current.destroy();
+                const ctx = chartRef.current.getContext('2d');
+                
+                let scatterPoints = [];
+                let legendData = [];
+
+                questions.forEach((q) => {
+                    const ans = avgAnswers[q.id] || { image: 0, biz: 0, chain: 0, time: 0 };
+                    const impact = (ans.image + ans.biz + ans.chain) / 3;
+                    const time = ans.time;
+                    
+                    const catKey = getCategoryKey(q.type, q.category);
+                    const colorSet = categoryColorMap[catKey] || { bg: "#4b5563", text: "#ffffff", name: "Other" };
+
+                    scatterPoints.push({ x: time, y: impact, _label: q.letter, _name: q.name, _type: q.type, _category: q.category, _engCat: colorSet.name, _color: colorSet });
+                    legendData.push({ letter: q.letter, name: q.name, type: q.type, category: q.category, engCat: colorSet.name, color: colorSet });
+                });
+
+                const isDark = theme === 'dark';
+                Chart.defaults.color = isDark ? '#94a3b8' : '#64748b'; 
+                Chart.defaults.font.family = "'Inter', 'PingFang TC', sans-serif";
+
+                const quadrantPlugin = {
+                    id: 'quadrantBg',
+                    beforeDraw: (chart) => {
+                        const { ctx, chartArea: { top, right, bottom, left }, scales: { x, y } } = chart;
+                        const midX = x.getPixelForValue(3); 
+                        const midY = y.getPixelForValue(3); 
+                        ctx.save();
+                        const safeMidX = Math.max(left, Math.min(right, midX));
+                        const safeMidY = Math.max(top, Math.min(bottom, midY));
+                        
+                        // 動態適應亮暗色系的四象限底色
+                        const bgColors = isDark ? {
+                            q1: 'rgba(239, 68, 68, 0.05)', q2: 'rgba(245, 158, 11, 0.05)',
+                            q3: 'rgba(16, 185, 129, 0.05)', q4: 'rgba(59, 130, 246, 0.05)'
+                        } : {
+                            q1: 'rgba(239, 68, 68, 0.08)', q2: 'rgba(245, 158, 11, 0.08)',
+                            q3: 'rgba(16, 185, 129, 0.08)', q4: 'rgba(59, 130, 246, 0.08)'
+                        };
+
+                        ctx.fillStyle = bgColors.q1; ctx.fillRect(safeMidX, top, right - safeMidX, safeMidY - top); 
+                        ctx.fillStyle = bgColors.q2; ctx.fillRect(left, top, safeMidX - left, safeMidY - top);
+                        ctx.fillStyle = bgColors.q3; ctx.fillRect(safeMidX, safeMidY, right - safeMidX, bottom - safeMidY);
+                        ctx.fillStyle = bgColors.q4; ctx.fillRect(left, safeMidY, safeMidX - left, bottom - safeMidY);
+                        ctx.restore();
+                    }
+                };
+
+                const drawLabelsPlugin = {
+                    id: 'drawLabels',
+                    afterDatasetsDraw: (chart) => {
+                        const ctx = chart.ctx;
+                        ctx.save();
+                        ctx.font = "bold 13px 'Inter', sans-serif"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
+                        ctx.fillStyle = isDark ? '#ffffff' : '#1e293b';
+                        chart.data.datasets.forEach((dataset, datasetIndex) => {
+                            const meta = chart.getDatasetMeta(datasetIndex);
+                            meta.data.forEach((element, index) => {
+                                const dataPoint = dataset.data[index];
+                                if (dataPoint && dataPoint._label) {
+                                    ctx.shadowColor = isDark ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.9)";
+                                    ctx.shadowBlur = 4;
+                                    ctx.fillText(dataPoint._label, element.x, element.y);
+                                }
+                            });
+                        });
+                        ctx.restore();
+                    }
+                };
+
+                Chart.register(quadrantPlugin, drawLabelsPlugin);
+
+                chartInstance.current = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: '氣候變遷議題',
+                            data: scatterPoints,
+                            backgroundColor: scatterPoints.map(p => p._color.bg),
+                            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                            borderWidth: 2,
+                            pointRadius: 14,
+                            pointHoverRadius: 16,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, layout: { padding: 20 },
+                        scales: {
+                            x: { 
+                                min: 0.5, max: 5.5, 
+                                grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                                title: { display: true, text: '平均發生急迫性 (低 → 高)', font: { size: 30, weight: 'bold' }, color: isDark ? '#cbd5e1' : '#475569' } 
+                            },
+                            y: { 
+                                min: 0.5, max: 5.5, 
+                                grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                                title: { display: true, text: '平均衝擊程度 (低 → 高)', font: { size: 30, weight: 'bold' }, color: isDark ? '#cbd5e1' : '#475569' } 
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                                titleColor: isDark ? '#fff' : '#0f172a',
+                                bodyColor: isDark ? '#cbd5e1' : '#334155',
+                                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (context) => {
+                                        const p = context.raw;
+                                        return [`[${p._label}] ${p._name}`, `類別: ${p._category}`, `急迫性: ${p.x.toFixed(1)} | 衝擊: ${p.y.toFixed(1)}`];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                window.legendData = legendData;
+                
+                return () => { Chart.unregister(quadrantPlugin, drawLabelsPlugin); if (chartInstance.current) chartInstance.current.destroy(); }
+            }, [avgAnswers, questions, theme]); // 加入 theme dependency，切換主題時重新繪圖
+
+            return (
+                <div className="max-w-7xl mx-auto px-4 pb-20 animate-fade-in-up">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+                        <div>
+                            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-slate-800 dark:text-white">整體平均：風險與機會散佈圖</h2>
+                            <p className="text-slate-600 dark:text-slate-400 font-medium">基於 <span className="text-emerald-600 dark:text-emerald-400 font-bold mx-1">{numSubmissions}</span> 人的平均意見繪製。</p>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            {onBack && <button onClick={onBack} className="px-6 py-3 rounded-xl font-semibold bg-white/40 hover:bg-white/60 text-slate-700 dark:bg-slate-700/40 dark:hover:bg-slate-600/60 dark:text-white backdrop-blur-md border border-slate-200 dark:border-white/10 transition-all shadow-sm">返回列表</button>}
+                            {!hideCompare && onCompare && <button onClick={onCompare} className="px-6 py-3 rounded-xl font-semibold bg-violet-500/10 text-violet-700 hover:bg-violet-600 hover:text-white dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500 border border-violet-500/20 backdrop-blur-sm transition-all shadow-lg">個人 vs 團隊比對</button>}
+                        </div>
+                    </div>
+
+                    <div className="glass p-5 rounded-2xl mb-8 border border-slate-200 dark:border-white/10 shadow-lg">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">11 種子類別顏色配置對照表</h4>
+                        <div className="flex flex-wrap gap-3">
+                            {Object.entries(categoryColorMap).map(([key, item]) => (
+                                <span key={key} className="px-3 py-1.5 text-xs font-bold rounded-lg text-white flex items-center gap-2 shadow-sm" style={{ backgroundColor: item.bg }}>
+                                    <span className="w-2 h-2 rounded-full bg-white/50"></span>{key}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="glass p-4 sm:p-8 rounded-3xl shadow-2xl mb-10">
+                        <div className="relative h-[600px] sm:h-[700px] w-full"><canvas ref={chartRef}></canvas></div>
+                    </div>
+
+                    <div className="glass p-6 sm:p-8 rounded-3xl shadow-xl">
+                        <h3 className="text-xl font-bold mb-6 text-slate-800 dark:text-white border-b border-slate-200 dark:border-white/10 pb-4">20 個議題詳細圖例 (A ~ T)</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-5 gap-x-6">
+                            {window.legendData && window.legendData.map(l => (
+                                <div key={l.letter} className="flex items-start p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-white/10">
+                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl text-white font-extrabold text-sm mr-4 flex-shrink-0 shadow-md" style={{ backgroundColor: l.color.bg }}>{l.letter}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-slate-800 dark:text-slate-200 font-medium text-sm leading-snug" title={l.name}>{l.name}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const DetailedCompareView = ({ myAnswers, avgAnswers, questions, numSubmissions, user, onBack, isAdmin, onSaveEdit }) => {
+            const [editingQuestion, setEditingQuestion] = useState(null);
+            const [editForm, setEditForm] = useState({ image: 1, biz: 1, chain: 1, time: 1 });
+
+            const handleOpenEdit = (q) => {
+                setEditingQuestion(q);
+                const currentAns = myAnswers[q.id] || { image: 1, biz: 1, chain: 1, time: 1 };
+                setEditForm({ ...currentAns });
+            };
+
+            const handleSaveForm = () => {
+                onSaveEdit(editingQuestion.id, editForm);
+                setEditingQuestion(null);
+            };
+
+            return (
+                <div className="max-w-6xl mx-auto px-4 pb-20 animate-fade-in-up relative">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
+                        <div>
+                            <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-3">員工單項評分 vs 團隊平均</h2>
+                            <p className="text-slate-600 dark:text-slate-400 font-medium">
+                                查詢對象：<span className="text-emerald-600 dark:text-emerald-400 font-bold mx-1">{user.name} ({user.id || user.userId})</span> | 
+                                團隊總基數：<span className="text-emerald-600 dark:text-emerald-400 font-bold mx-1">{numSubmissions}</span> 人
+                            </p>
+                        </div>
+                        <button onClick={onBack} className="px-6 py-3 rounded-xl font-semibold bg-white/40 hover:bg-white/60 text-slate-700 dark:bg-slate-700/40 dark:hover:bg-slate-600/60 dark:text-white backdrop-blur-md border border-slate-200 dark:border-white/10 transition-all shadow-sm">
+                            返回列表
+                        </button>
+                    </div>
+
+                    <div className="glass rounded-3xl overflow-hidden shadow-2xl relative z-10">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px]">
+                                <thead>
+                                    <tr className="bg-slate-200 dark:bg-slate-800/80 text-slate-800 dark:text-white">
+                                        <th className="p-4 font-bold text-center w-16 border-r border-slate-300 dark:border-white/5" rowSpan="2">代號</th>
+                                        <th className="p-4 font-bold border-r border-slate-300 dark:border-white/5" rowSpan="2">議題名稱</th>
+                                        <th className="p-3 font-bold text-center border-b border-slate-300 dark:border-white/5 bg-blue-100 dark:bg-blue-900/20" colSpan="2">衝擊程度 (滿分5)</th>
+                                        <th className="p-3 font-bold text-center border-b border-slate-300 dark:border-white/5 border-l border-slate-300 dark:border-white/5 bg-violet-100 dark:bg-violet-900/20" colSpan="2">急迫性 (滿分5)</th>
+                                        {isAdmin && <th className="p-4 font-bold text-center border-l border-slate-300 dark:border-white/5" rowSpan="2">操作</th>}
+                                    </tr>
+                                    <tr className="bg-slate-100 dark:bg-slate-800/50 text-sm">
+                                        <th className="p-3 text-center text-blue-700 dark:text-blue-300 font-semibold border-r border-slate-300 dark:border-white/5 bg-blue-50 dark:bg-blue-900/10">該員評分</th>
+                                        <th className="p-3 text-center text-slate-600 dark:text-slate-400 font-semibold bg-slate-200/50 dark:bg-slate-900/30">團隊平均</th>
+                                        <th className="p-3 text-center text-violet-700 dark:text-violet-300 font-semibold border-l border-slate-300 dark:border-white/5 border-r border-slate-300 dark:border-white/5 bg-violet-50 dark:bg-violet-900/10">該員評分</th>
+                                        <th className="p-3 text-center text-slate-600 dark:text-slate-400 font-semibold bg-slate-200/50 dark:bg-slate-900/30">團隊平均</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {questions.map((q, idx) => {
+                                        const myAns = myAnswers[q.id] || { image: 0, biz: 0, chain: 0, time: 0 };
+                                        const avgAns = avgAnswers[q.id] || { image: 0, biz: 0, chain: 0, time: 0 };
+                                        
+                                        const myImpact = ((myAns.image + myAns.biz + myAns.chain) / 3).toFixed(1);
+                                        const avgImpact = ((avgAns.image + avgAns.biz + avgAns.chain) / 3).toFixed(1);
+                                        const myTime = myAns.time.toFixed(1);
+                                        const avgTime = avgAns.time.toFixed(1);
+
+                                        return (
+                                            <tr key={q.id} className="border-b border-slate-200 dark:border-white/10 hover:bg-slate-100/50 dark:hover:bg-white/5 transition-colors">
+                                                <td className="p-3 text-center border-r border-slate-200 dark:border-white/10">
+                                                    <span className="inline-block px-3 py-1 text-xs font-bold text-white bg-slate-700 rounded-md">{q.letter}</span>
+                                                </td>
+                                                <td className="p-4 text-slate-800 dark:text-slate-200 font-medium border-r border-slate-200 dark:border-white/10">
+                                                    <span className={`text-xs font-bold mr-2 px-2 py-0.5 rounded-md ${q.type === '機會' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400'}`}>{q.type}</span>
+                                                    {q.name}
+                                                </td>
+                                                <td className="p-4 text-center font-bold text-blue-600 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-500/5 border-r border-slate-200 dark:border-white/10">{myImpact}</td>
+                                                <td className="p-4 text-center font-medium text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-900/20">{avgImpact}</td>
+                                                <td className="p-4 text-center font-bold text-violet-600 dark:text-violet-300 bg-violet-50/50 dark:bg-violet-500/5 border-l border-slate-200 dark:border-white/10 border-r border-slate-200 dark:border-white/10">{myTime}</td>
+                                                <td className="p-4 text-center font-medium text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-900/20">{avgTime}</td>
+                                                {isAdmin && (
+                                                    <td className="p-3 text-center border-l border-slate-200 dark:border-white/10">
+                                                        <button onClick={() => handleOpenEdit(q)} className="px-3 py-1.5 bg-amber-100 text-amber-700 hover:bg-amber-500 hover:text-white dark:bg-amber-500/20 dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white rounded-lg text-sm font-semibold transition-colors">
+                                                            編輯
+                                                        </button>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* 編輯彈出視窗 */}
+                    {editingQuestion && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-md px-4 animate-fade-in-up">
+                            <div className="glass p-6 sm:p-8 rounded-3xl max-w-md w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 bg-white/70 dark:bg-slate-800/70">
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">編輯評估分數</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 pb-4 border-b border-slate-200 dark:border-white/10">[{editingQuestion.letter}] {editingQuestion.name}</p>
+                                
+                                <div className="space-y-4 mb-8">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-slate-700 dark:text-slate-300 font-medium">企業形象與商譽</label>
+                                        <select value={editForm.image} onChange={e => setEditForm({...editForm, image: parseInt(e.target.value)})} className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white px-3 py-2 rounded-lg border-none outline-none font-bold">
+                                            {[1,2,3,4,5].map(v => <option key={v} value={v}>{v} 分</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-slate-700 dark:text-slate-300 font-medium">商業策略與營運</label>
+                                        <select value={editForm.biz} onChange={e => setEditForm({...editForm, biz: parseInt(e.target.value)})} className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white px-3 py-2 rounded-lg border-none outline-none font-bold">
+                                            {[1,2,3,4,5].map(v => <option key={v} value={v}>{v} 分</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-slate-700 dark:text-slate-300 font-medium">供應鏈關注度</label>
+                                        <select value={editForm.chain} onChange={e => setEditForm({...editForm, chain: parseInt(e.target.value)})} className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white px-3 py-2 rounded-lg border-none outline-none font-bold">
+                                            {[1,2,3,4,5].map(v => <option key={v} value={v}>{v} 分</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-white/5">
+                                        <label className="text-violet-700 dark:text-violet-400 font-bold">發生急迫性</label>
+                                        <select value={editForm.time} onChange={e => setEditForm({...editForm, time: parseInt(e.target.value)})} className="bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-300 px-3 py-2 rounded-lg border-none outline-none font-bold">
+                                            {[1,2,3,4,5].map(v => <option key={v} value={v}>{v} 分</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <button onClick={() => setEditingQuestion(null)} className="flex-1 py-3 rounded-xl font-semibold bg-slate-200/50 hover:bg-slate-300/50 text-slate-700 dark:bg-slate-700/50 dark:hover:bg-slate-600/50 dark:text-white backdrop-blur-sm transition-all border border-slate-300 dark:border-white/10">
+                                        取消
+                                    </button>
+                                    <button onClick={handleSaveForm} className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white shadow-lg shadow-blue-500/30 border border-white/20 transition-all">
+                                        儲存變更
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- 4. 主應用程式組件 ---
+        const App = () => {
+            const [step, setStep] = useState(0); 
+            const [currentUser, setCurrentUser] = useState(null);
+            
+            // 處理 GAS 同步狀態
+            const [gasInitDone, setGasInitDone] = useState(false);
+
+            // 主題狀態 (亮/暗)
+            const [theme, setTheme] = useState('dark');
+
+            // 處理主題切換副作用
+            useEffect(() => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.body.classList.add('dark');
+                    document.body.classList.remove('light');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.body.classList.remove('dark');
+                    document.body.classList.add('light');
+                }
+            }, [theme]);
+
+            const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+            
+            // 用戶填寫紀錄
+            const [answers, setAnswers] = useState({});
+            
+            // 全域統整紀錄
+            const [allSubmissions, setAllSubmissions] = useState([]);
+            const [avgAnswers, setAvgAnswers] = useState({});
+            const [numSubmissions, setNumSubmissions] = useState(0);
+
+            // 管理員正在查看的對象
+            const [adminTargetUser, setAdminTargetUser] = useState(null);
+            const [adminTargetAnswers, setAdminTargetAnswers] = useState({});
+
+            // 初始化讀取 GAS 資料庫
+            useEffect(() => {
+                const fetchFromGAS = async () => {
+                    if (!GAS_URL || GAS_URL.includes("請在此貼上您的_GAS_網址")) {
+                        setGasInitDone(true);
+                        return;
+                    }
+                    try {
+                        // 加入時間戳(t參數)強制打破瀏覽器快取，確保跨電腦或重新整理時能抓取最新資料
+                        const response = await fetch(`${GAS_URL}?action=read&t=${new Date().getTime()}`);
+                        const data = await response.json();
+                        if (data && data.success && data.submissions) {
+                            // 讀取當前 localStorage 紀錄，與 GAS 回傳資料進行比對合併
+                            const localDataRaw = localStorage.getItem('climate_survey_submissions');
+                            let finalSubmissions = data.submissions;
+                            
+                            if (localDataRaw) {
+                                try {
+                                    const localSubmissions = JSON.parse(localDataRaw);
+                                    const mergedMap = new Map();
+                                    
+                                    // 1. 先載入雲端(GAS)取得的最新資料
+                                    data.submissions.forEach(sub => mergedMap.set(sub.userId, sub));
+                                    
+                                    // 2. 疊加 LocalStorage 資料，若本地端有更新的紀錄則優先保留，防止因網路延遲而被舊資料覆蓋
+                                    localSubmissions.forEach(localSub => {
+                                        const gasSub = mergedMap.get(localSub.userId);
+                                        if (!gasSub || new Date(localSub.timestamp) > new Date(gasSub.timestamp)) {
+                                            mergedMap.set(localSub.userId, localSub);
+                                        }
+                                    });
+                                    
+                                    finalSubmissions = Array.from(mergedMap.values());
+                                } catch (e) {
+                                    console.error("LocalStorage 解析錯誤:", e);
+                                }
+                            }
+                            localStorage.setItem('climate_survey_submissions', JSON.stringify(finalSubmissions));
+                        }
+                    } catch (error) {
+                        console.error("GAS 資料讀取失敗:", error);
+                    }
+                    setGasInitDone(true);
+                };
+                fetchFromGAS();
+            }, []);
+
+            // 同步資料上傳至 GAS
+            const syncToGAS = async (dataToSync) => {
+                if (!GAS_URL || GAS_URL.includes("請在此貼上您的_GAS_網址")) return;
+                try {
+                    await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "sync_all", submissions: dataToSync })
+                    });
+                } catch (error) {
+                    console.error("GAS 資料同步失敗:", error);
+                }
+            };
+
+            const loadGlobalData = () => {
+                const existing = JSON.parse(localStorage.getItem('climate_survey_submissions') || '[]');
+                const newAvg = {};
+                questionsData.forEach(q => { newAvg[q.id] = { image: 0, biz: 0, chain: 0, time: 0 }; });
+                
+                if (existing.length > 0) {
+                    questionsData.forEach(q => {
+                        let sumI = 0, sumB = 0, sumC = 0, sumT = 0, count = 0;
+                        existing.forEach(sub => {
+                            if(sub.answers && sub.answers[q.id]) {
+                                sumI += sub.answers[q.id].image;
+                                sumB += sub.answers[q.id].biz;
+                                sumC += sub.answers[q.id].chain;
+                                sumT += sub.answers[q.id].time;
+                                count++;
+                            }
+                        });
+                        if (count > 0) {
+                            newAvg[q.id] = { image: sumI/count, biz: sumB/count, chain: sumC/count, time: sumT/count };
+                        }
+                    });
+                }
+                return { submissions: existing, avgAnswers: newAvg };
+            };
+
+            const handleLogin = (user) => {
+                setCurrentUser(user);
+                const globalData = loadGlobalData();
+                
+                // 無論是否為管理員，皆預先載入統整資料（讓普通員工可以直接查看團隊結果）
+                setAllSubmissions(globalData.submissions);
+                setAvgAnswers(globalData.avgAnswers);
+                setNumSubmissions(globalData.submissions.length);
+
+                if (user.isAdmin) {
+                    setStep(30); 
+                } else {
+                    // 防止重複填寫：系統自動檢查該員工是否已有提交紀錄
+                    const hasSubmitted = globalData.submissions.some(sub => sub.userId === user.id);
+                    if (hasSubmitted) {
+                        // 若有，讀取該使用者的紀錄以供後續對比
+                        const userSub = globalData.submissions.find(sub => sub.userId === user.id);
+                        setAnswers(userSub.answers);
+                        // 直接引導至「完成畫面」，只能查看結果而無法重新評估
+                        setStep(22);
+                    } else {
+                        setStep(1);
+                    }
+                }
+            };
+
+            const handleFinishAll = (finalAnswers) => {
+                const globalData = loadGlobalData();
+                const filtered = globalData.submissions.filter(sub => sub.userId !== currentUser.id);
+                filtered.push({
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    answers: finalAnswers,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('climate_survey_submissions', JSON.stringify(filtered));
+                syncToGAS(filtered); // 結束時自動上傳更新至 GAS
+
+                const newGlobalData = loadGlobalData();
+                setAvgAnswers(newGlobalData.avgAnswers);
+                setNumSubmissions(newGlobalData.submissions.length);
+                
+                setStep(22);
+                window.scrollTo(0, 0);
+            };
+
+            const handleSaveAnswer = (ans) => {
+                const currentQId = questionsData[step - 2].id;
+                const newAnswers = { ...answers, [currentQId]: ans };
+                setAnswers(newAnswers);
+
+                if (step - 2 === questionsData.length - 1) {
+                    handleFinishAll(newAnswers);
+                } else {
+                    setStep(prev => prev + 1);
+                    window.scrollTo(0, 0);
+                }
+            };
+
+            const handlePrevQuestion = () => {
+                if (step > 2) { setStep(prev => prev - 1); window.scrollTo(0, 0); }
+            };
+
+            // 管理員：查看單一員工詳細紀錄
+            const viewUserDetail = (submission) => {
+                setAdminTargetUser({ name: submission.userName, id: submission.userId });
+                setAdminTargetAnswers(submission.answers);
+                setStep(33);
+                window.scrollTo(0, 0);
+            };
+
+            // 管理員：刪除選中的紀錄
+            const handleDeleteSubmissions = (userIds) => {
+                const globalData = loadGlobalData();
+                const newSubmissions = globalData.submissions.filter(sub => !userIds.includes(sub.userId));
+                localStorage.setItem('climate_survey_submissions', JSON.stringify(newSubmissions));
+                syncToGAS(newSubmissions); // 刪除時自動同步至 GAS
+                
+                const newGlobalData = loadGlobalData();
+                setAllSubmissions(newGlobalData.submissions);
+                setAvgAnswers(newGlobalData.avgAnswers);
+                setNumSubmissions(newGlobalData.submissions.length);
+            };
+
+            // 管理員：匯出全體評估結果為 XLSX（含散佈圖工作表 + 每位員工一頁的詳細分數）
+            const handleExportXLSX = () => {
+                if (typeof XLSX === 'undefined') {
+                    alert('匯出元件尚未載入完成，請稍後再試一次。');
+                    return;
+                }
+
+                const wb = XLSX.utils.book_new();
+
+                // 1. 整理全體問卷資料及排序
+                const processedData = questionsData.map(q => {
+                    const ans = avgAnswers[q.id] || { image: 0, biz: 0, chain: 0, time: 0 };
+                    const impactRaw = (ans.image + ans.biz + ans.chain) / 3;
+                    return {
+                        ...q,
+                        impactScore: Number(impactRaw.toFixed(1)),
+                        timeScore: Number(ans.time.toFixed(1)),
+                        sortValue: (impactRaw * 10) + ans.time 
+                    };
+                });
+                const risks = processedData.filter(q => q.type.includes("風險")).sort((a, b) => b.sortValue - a.sortValue);
+                const opps = processedData.filter(q => q.type === "機會").sort((a, b) => b.sortValue - a.sortValue);
+
+                // ===== 新增表 1：專案審查委員確認簽署名冊 =====
+                const rosterRows = [["序", "姓名", "簽名", "序", "姓名", "簽名"]];
+                const totalSubmissions = allSubmissions.length;
+                const halfLen = Math.ceil(Math.max(totalSubmissions, 30) / 2); // 至少呈現 30 個位子，切分成兩欄
+                for (let i = 0; i < halfLen; i++) {
+                    const idx1 = i;
+                    const idx2 = i + halfLen;
+                    const p1 = idx1 < totalSubmissions ? allSubmissions[idx1].userName : "";
+                    const p2 = idx2 < totalSubmissions ? allSubmissions[idx2].userName : "";
+                    rosterRows.push([
+                        idx1 + 1, p1, "",
+                        idx2 + 1, p2, ""
+                    ]);
+                }
+                const wsRoster = XLSX.utils.aoa_to_sheet(rosterRows);
+                wsRoster['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 15 }, { wch: 5 }, { wch: 15 }, { wch: 15 }];
+                XLSX.utils.book_append_sheet(wb, wsRoster, "專案審查委員確認簽署名冊");
+
+                // ===== 新增表 2：氣候風險議題評分排序 =====
+                // 只帶入重要內容 (議題標題)，排除細節
+                const riskRows = [["排序", "代號", "議題", "衝擊程度評分", "發生急迫程度評分"]];
+                risks.forEach((r, idx) => {
+                    riskRows.push([idx + 1, r.letter, r.name, r.impactScore, r.timeScore]);
+                });
+                const wsRisk = XLSX.utils.aoa_to_sheet(riskRows);
+                wsRisk['!cols'] = [{ wch: 6 }, { wch: 8 }, { wch: 45 }, { wch: 15 }, { wch: 18 }];
+                XLSX.utils.book_append_sheet(wb, wsRisk, "氣候風險議題評分排序（金色標示為前7項重大風險議題）".substring(0,31)); 
+
+                // ===== 新增表 3：氣候機會議題評分排序 =====
+                const oppRows = [["排序", "代號", "議題", "衝擊程度評分", "發生急迫程度評分"]];
+                opps.forEach((o, idx) => {
+                    oppRows.push([idx + 1, o.letter, o.name, o.impactScore, o.timeScore]);
+                });
+                const wsOpp = XLSX.utils.aoa_to_sheet(oppRows);
+                wsOpp['!cols'] = [{ wch: 6 }, { wch: 8 }, { wch: 45 }, { wch: 15 }, { wch: 18 }];
+                XLSX.utils.book_append_sheet(wb, wsOpp, "氣候機會議題評分排序（金色標示為前2項重大機會議題）".substring(0,31));
+
+
+                // ===== 既有表 4：氣候變遷風險與機會散佈圖（全體平均） =====
+                const typeOrder = ["轉型風險", "實體風險", "機會"];
+                const sheet1Rows = [];
+                const sheet1Merges = [];
+                typeOrder.forEach(type => {
+                    const headerRow = sheet1Rows.length;
+                    sheet1Rows.push([type, "", "衝擊程度", "急迫性"]);
+                    sheet1Merges.push({ s: { r: headerRow, c: 0 }, e: { r: headerRow, c: 1 } });
+                    questionsData.filter(q => q.type === type).forEach(q => {
+                        const ans = avgAnswers[q.id] || { image: 0, biz: 0, chain: 0, time: 0 };
+                        const impact = Number(((ans.image + ans.biz + ans.chain) / 3).toFixed(1));
+                        const time = Number((ans.time || 0).toFixed(1));
+                        sheet1Rows.push([q.letter, q.name, impact, time]); // 議題內容只填寫 q.name
+                    });
+                });
+                const ws1 = XLSX.utils.aoa_to_sheet(sheet1Rows);
+                ws1['!cols'] = [{ wch: 10 }, { wch: 45 }, { wch: 12 }, { wch: 12 }];
+                ws1['!merges'] = sheet1Merges;
+                XLSX.utils.book_append_sheet(wb, ws1, "氣候變遷風險與機會散佈圖");
+
+                // ===== 既有表：每位員工一頁詳細數值 =====
+                const usedSheetNames = new Set(["專案審查委員確認簽署名冊", "氣候風險議題評分排序", "氣候機會議題評分排序", "氣候變遷風險與機會散佈圖"]);
+                allSubmissions.forEach(sub => {
+                    const rows = [];
+                    rows.push(["員工填寫紀錄", "", "", "", "", "", "", "總平均", ""]);
+                    rows.push(["類型", "議題", "", "企業形象與商譽", "商業策略與營運", "供應鏈與價值鏈關注", "發生急迫性", "衝擊程度", "急迫性"]);
+                    const merges = [
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+                        { s: { r: 0, c: 7 }, e: { r: 0, c: 8 } },
+                        { s: { r: 1, c: 1 }, e: { r: 1, c: 2 } }
+                    ];
+
+                    let rowIdx = rows.length;
+                    typeOrder.forEach(type => {
+                        const typeQuestions = questionsData.filter(q => q.type === type);
+                        const typeStartRow = rowIdx;
+                        const categoryGroups = [];
+                        typeQuestions.forEach(q => {
+                            const last = categoryGroups[categoryGroups.length - 1];
+                            if (last && last.category === q.category) last.items.push(q);
+                            else categoryGroups.push({ category: q.category, items: [q] });
+                        });
+
+                        categoryGroups.forEach(group => {
+                            const catStartRow = rowIdx;
+                            group.items.forEach(q => {
+                                const ans = (sub.answers && sub.answers[q.id]) || { image: 0, biz: 0, chain: 0, time: 0 };
+                                const impact = Number((((ans.image || 0) + (ans.biz || 0) + (ans.chain || 0)) / 3).toFixed(1));
+                                const time = Number((ans.time || 0).toFixed(1));
+                                rows.push(["", "", q.name, ans.image ?? 0, ans.biz ?? 0, ans.chain ?? 0, ans.time ?? 0, impact, time]);
+                                rowIdx++;
+                            });
+                            rows[catStartRow][1] = group.category;
+                            if (group.items.length > 1) merges.push({ s: { r: catStartRow, c: 1 }, e: { r: rowIdx - 1, c: 1 } });
+                        });
+                        rows[typeStartRow][0] = type;
+                        if (typeQuestions.length > 1) merges.push({ s: { r: typeStartRow, c: 0 }, e: { r: rowIdx - 1, c: 0 } });
+                    });
+
+                    const ws = XLSX.utils.aoa_to_sheet(rows);
+                    ws['!cols'] = [{ wch: 10 }, { wch: 13 }, { wch: 37 }, { wch: 22 }, { wch: 20 }, { wch: 28 }, { wch: 16 }, { wch: 10 }, { wch: 10 }];
+                    ws['!merges'] = merges;
+
+                    let sheetName = String(sub.userName || sub.userId || '員工').replace(/[\\/?*\[\]:]/g, '').slice(0, 31) || '員工';
+                    let uniqueName = sheetName;
+                    let dupCount = 1;
+                    while (usedSheetNames.has(uniqueName)) {
+                        const suffix = `_${dupCount++}`;
+                        uniqueName = sheetName.slice(0, 31 - suffix.length) + suffix;
+                    }
+                    usedSheetNames.add(uniqueName);
+                    XLSX.utils.book_append_sheet(wb, ws, uniqueName);
+                });
+
+                const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                XLSX.writeFile(wb, `氣候風險與機會評估_${dateStr}.xlsx`);
+            };
+
+            // 管理員：編輯單一員工單項題目分數
+            const handleAdminEditAnswer = (questionId, newAnswerObj) => {
+                const globalData = loadGlobalData();
+                const targetIdx = globalData.submissions.findIndex(sub => sub.userId === adminTargetUser.id);
+                
+                if (targetIdx !== -1) {
+                    // 更新 localStorage
+                    globalData.submissions[targetIdx].answers[questionId] = newAnswerObj;
+                    localStorage.setItem('climate_survey_submissions', JSON.stringify(globalData.submissions));
+                    syncToGAS(globalData.submissions); // 編輯後自動同步至 GAS
+                    
+                    // 重新載入全域資料
+                    const newGlobalData = loadGlobalData();
+                    setAllSubmissions(newGlobalData.submissions);
+                    setAvgAnswers(newGlobalData.avgAnswers);
+                    setNumSubmissions(newGlobalData.submissions.length);
+                    
+                    // 更新當前畫面檢視的答案
+                    setAdminTargetAnswers(globalData.submissions[targetIdx].answers);
+                }
+            };
+
+            // 控制登出確認彈窗的狀態
+            const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+            const handleBackToLogin = () => {
+                setShowLogoutModal(true);
+            };
+
+            const confirmLogout = () => {
+                setStep(0);
+                setAnswers({});
+                setCurrentUser(null);
+                setShowLogoutModal(false);
+            };
+
+            const renderContent = () => {
+                if (step === 0) {
+                    return <LoginView onLogin={handleLogin} />;
+                } else if (step === 1) {
+                    return <WelcomeView user={currentUser} onStart={() => setStep(2)} onViewAdminResult={() => { setStep(30); window.scrollTo(0,0); }} />;
+                } else if (step >= 2 && step <= 21) {
+                    const qIdx = step - 2;
+                    return (
+                        <QuestionView 
+                            question={questionsData[qIdx]} 
+                            qIndex={qIdx} 
+                            totalQs={questionsData.length}
+                            currentAnswers={answers[questionsData[qIdx].id]}
+                            onSaveAnswers={handleSaveAnswer} 
+                            onPrevQuestion={handlePrevQuestion}
+                        />
+                    );
+                } else if (step === 22) {
+                    return <CompletionView user={currentUser} onNext={() => { setStep(23); window.scrollTo(0,0); }} />;
+                } else if (step === 23) {
+                    return <ResultListView avgAnswers={avgAnswers} questions={questionsData} numSubmissions={numSubmissions} onNext={() => {setStep(24); window.scrollTo(0,0);}} onCompare={() => {setStep(25); window.scrollTo(0,0);}} />;
+                } else if (step === 24) {
+                    return <ScatterChartView avgAnswers={avgAnswers} questions={questionsData} numSubmissions={numSubmissions} onBack={() => {setStep(23); window.scrollTo(0,0);}} onCompare={() => {setStep(25); window.scrollTo(0,0);}} theme={theme} />;
+                } else if (step === 25) {
+                    return <DetailedCompareView myAnswers={answers} avgAnswers={avgAnswers} questions={questionsData} numSubmissions={numSubmissions} user={currentUser} onBack={() => {setStep(23); window.scrollTo(0,0);}} isAdmin={false} />;
+                }
+                // 管理員/全域團隊結果區塊
+                else if (step === 30) {
+                    return <AdminHomeView submissions={allSubmissions} onGoResult={() => {setStep(31); window.scrollTo(0,0);}} onGoScatter={() => {setStep(32); window.scrollTo(0,0);}} onGoDetail={viewUserDetail} onDelete={handleDeleteSubmissions} onExport={currentUser?.isAdmin ? handleExportXLSX : null} isAdmin={currentUser?.isAdmin} onBack={!currentUser?.isAdmin ? () => setStep(1) : null} />;
+                } else if (step === 31) {
+                    return <ResultListView avgAnswers={avgAnswers} questions={questionsData} numSubmissions={numSubmissions} onBack={() => {setStep(30); window.scrollTo(0,0);}} hideCompare={true} onNext={null} />;
+                } else if (step === 32) {
+                    return <ScatterChartView avgAnswers={avgAnswers} questions={questionsData} numSubmissions={numSubmissions} onBack={() => {setStep(30); window.scrollTo(0,0);}} hideCompare={true} theme={theme} />;
+                } else if (step === 33) {
+                    return <DetailedCompareView myAnswers={adminTargetAnswers} avgAnswers={avgAnswers} questions={questionsData} numSubmissions={numSubmissions} user={adminTargetUser} onBack={() => {setStep(30); window.scrollTo(0,0);}} isAdmin={currentUser?.isAdmin} onSaveEdit={handleAdminEditAnswer} />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen relative font-sans">
+                    {/* 流體背景 */}
+                    <div className="blob-container">
+                        <div className="blob blob-1"></div>
+                        <div className="blob blob-2"></div>
+                        <div className="blob blob-3"></div>
+                    </div>
+
+                    <header className="glass border-b border-slate-200 dark:border-white/10 sticky top-0 z-50 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl shadow-sm">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div className="flex items-center gap-3 text-xl font-bold text-slate-800 dark:text-white tracking-wide">
+                                <span className="text-2xl drop-shadow-md">🌍</span>
+                                <div>
+                                    大量科技 氣候風險與機會評估系統
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 text-sm font-medium">
+                                {/* 亮暗模式切換按鈕 */}
+                                <button 
+                                    onClick={toggleTheme} 
+                                    className="p-2.5 rounded-xl text-xl bg-white/30 dark:bg-slate-800/30 hover:bg-white/50 dark:hover:bg-white/10 backdrop-blur-md border border-slate-200 dark:border-white/10 transition-all shadow-sm hover:scale-105"
+                                    title={theme === 'dark' ? '切換為亮色模式' : '切換為暗色模式'}
+                                >
+                                    {theme === 'dark' ? '🌞' : '🌙'}
+                                </button>
+
+                                {currentUser && (
+                                    <>
+                                        <div className={`px-4 py-2 rounded-xl shadow-sm border backdrop-blur-md ${currentUser.isAdmin ? 'bg-violet-500/10 text-violet-700 border-violet-200 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/30' : 'bg-white/30 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-white/10'}`}>
+                                            <span className="opacity-70 mr-2">登入者</span>
+                                            {currentUser.name} {currentUser.isAdmin && '(管理員)'}
+                                        </div>
+                                        
+                                        {/* 回到登入畫面按鈕 */}
+                                        <button 
+                                            onClick={handleBackToLogin} 
+                                            className="text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 transition-all flex items-center gap-1 bg-white/30 dark:bg-white/5 hover:bg-white/50 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 px-4 py-2 rounded-xl backdrop-blur-md shadow-sm hover:shadow-md"
+                                        >
+                                            回到登入畫面
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="pt-8 sm:pt-12 relative z-10">
+                        {!gasInitDone ? (
+                            <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 animate-fade-in-up">
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 dark:border-slate-700 border-t-emerald-500 dark:border-t-emerald-400 mb-6"></div>
+                                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">資料讀取中...</h2>
+                                <p className="text-slate-500 dark:text-slate-400">正在載入最新數據，請稍候</p>
+                            </div>
+                        ) : (
+                            renderContent()
+                        )}
+                    </main>
+
+                    {/* 自訂登出確認彈窗 */}
+                    {showLogoutModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-md px-4 animate-fade-in-up">
+                            <div className="glass p-8 rounded-3xl max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-center border border-white/20 bg-white/70 dark:bg-slate-800/70">
+                                <div className="text-5xl mb-4 drop-shadow-md animate-bounce">⚠️</div>
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">確定要登出嗎？</h3>
+                                <p className="text-slate-600 dark:text-slate-300 mb-8 font-medium">未儲存的進度將會遺失。</p>
+                                <div className="flex gap-4 justify-center">
+                                    <button 
+                                        onClick={() => setShowLogoutModal(false)} 
+                                        className="px-6 py-3 rounded-xl font-semibold bg-slate-200/50 hover:bg-slate-300/50 text-slate-700 dark:bg-slate-700/50 dark:hover:bg-slate-600/50 dark:text-white backdrop-blur-sm border border-slate-300 dark:border-white/10 transition-all w-1/2"
+                                    >
+                                        取消
+                                    </button>
+                                    <button 
+                                        onClick={confirmLogout} 
+                                        className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white shadow-lg shadow-rose-500/30 border border-white/20 transition-all w-1/2"
+                                    >
+                                        確定
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
