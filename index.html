@@ -313,7 +313,7 @@
             <!-- Category Filter Tabs -->
             <div class="flex flex-wrap items-center justify-between gap-3 mb-8 border-b border-slate-200 dark:border-slate-800/80 pb-4">
                 <div class="flex flex-wrap gap-2" id="category-filters">
-                    <button onclick="filterCategory('all')" class="cat-btn active px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 dark:bg-cyan-500 text-white shadow-md transition-all duration-300">全部系統 (10)</button>
+                    <button onclick="filterCategory('all')" class="cat-btn active px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 dark:bg-cyan-500 text-white shadow-md transition-all duration-300">全部系統 (12)</button>
                     <button onclick="filterCategory('hr')" class="cat-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-all duration-300">人事與考勤</button>
                     <button onclick="filterCategory('ai')" class="cat-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-all duration-300">AI 智慧翻譯</button>
                     <button onclick="filterCategory('governance')" class="cat-btn px-4 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-all duration-300">風控與資產</button>
@@ -325,344 +325,220 @@
             </div>
 
             <!-- 10 System Grid -->
-            <div id="systems-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div id="systems-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
 
                 <!-- ITEM 1: 員工制服尺寸登記系統 -->
                 <div class="system-card border-glow-wrapper" data-category="hr" data-keywords="員工 制服 尺寸 登記 服裝 申請">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/GHG/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/GHG/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all duration-500"></div>
-                        
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-sky-500/10 text-sky-700 dark:text-cyan-400 border border-sky-500/20">
-                                    #01 人事福利
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 dark:text-cyan-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-shirt"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors duration-300 mb-2">
-                                員工制服尺寸登記系統
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                提供全體同仁線上填報與量測制服尺寸，精準紀錄發放需求，自動化整合發放清冊與備貨庫存。
-                            </p>
+
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1kau0KVCqaoqcL8CvN-O2UvXQvkaHlBA2" alt="員工制服尺寸登記系統" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-cyan-400 flex items-center gap-1.5">
-                                前往登記系統 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-blue-600 dark:group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors duration-300 flex items-center gap-2">
+                                員工制服尺寸登記系統
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 2: AI 自動翻譯機 -->
                 <div class="system-card border-glow-wrapper" data-category="ai" data-keywords="ai 自動 翻譯 多國 語言 機器 gemini">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://gemini.google.com/share/74668868320d')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://gemini.google.com/share/74668868320d')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
-                                    #02 AI 智慧工具
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-robot"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 mb-2">
-                                AI 自動翻譯機
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                基於高階大語言模型驅動的通用多國語言翻譯引擎，精準轉換專業商業術語與跨國郵件溝通。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1HPjpiWRLSlZkUKVe3Gf66v4dvoxNoLaw" alt="AI 自動翻譯機" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 flex items-center gap-1.5">
-                                啟動 AI 翻譯 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 flex items-center gap-2">
+                                AI 自動翻譯機
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 3: 管理部外籍工作翻譯機 -->
                 <div class="system-card border-glow-wrapper" data-category="ai" data-keywords="外籍 工作 翻譯 機 移工 越語 印尼 泰語 krai mon">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/Krai-Mon/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/Krai-Mon/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                                    #03 多語溝通
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-language"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300 mb-2">
-                                管理部外籍工作翻譯機
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                專為廠區外籍同仁打造的現場工作指令與日常溝通翻譯工具，支援越南語、印尼語、泰語等多國對譯。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1fenZLpocZ4M7m5DDyFy5YA1j7yqaVEFq" alt="管理部外籍工作翻譯機" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 flex items-center gap-1.5">
-                                開啟工作翻譯機 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2">
+                                管理部外籍工作翻譯機
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 4: 管理部外籍加班單 -->
                 <div class="system-card border-glow-wrapper" data-category="hr" data-keywords="外籍 加班 單 考勤 出勤 移工 OT">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/OT/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/OT/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                                    #04 考勤作業
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-business-time"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300 mb-2">
-                                管理部外籍加班單
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                外籍同仁加班申請與工時審核專用系統，內建雙語界面的申報流程與簽核記錄。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1UTuPwm0y-Eh4h2tAxxo4P_e8VuN4vej6" alt="管理部外籍加班單" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 flex items-center gap-1.5">
-                                前往加班單申請 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300 flex items-center gap-2">
+                                管理部外籍加班單
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 5: 內容資料文字優化 -->
                 <div class="system-card border-glow-wrapper" data-category="ai" data-keywords="內容 資料 文字 優化 文案 潤飾 公文 gemini">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://share.gemini.google/O0Jb5iJAG20A')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://share.gemini.google/O0Jb5iJAG20A')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-pink-500/10 text-pink-700 dark:text-pink-400 border border-pink-500/20">
-                                    #05 文案編修
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300 mb-2">
-                                內容資料文字優化
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                智慧型行政公告、會議紀錄、公文修飾與信件撰寫輔助系統，自動修飾商業語氣與格式排版。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1clv8pis_sQdEtVaykzHOES_VGYomnkg9" alt="資料檔案內容優化系統" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-pink-600 dark:group-hover:text-pink-400 flex items-center gap-1.5">
-                                開始文字優化 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300 flex items-center gap-2">
+                                內容資料文字優化
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 6: 風險與機會問卷系統 -->
                 <div class="system-card border-glow-wrapper" data-category="governance" data-keywords="風險 機會 問卷 系統 評估 稽核 ESG test">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/TCFD/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/TCFD/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
-                                    #06 治理風控
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-clipboard-check"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 mb-2">
-                                風險與機會問卷系統
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                營運風險評估與改善機會調查問卷，線上搜集各部門問卷數據並生成企業內部稽核分析圖表。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1v6Q3cRlY577Tbkg-Jwy6qrhpB_UZ-yxP" alt="風險與機會問卷系統" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center gap-1.5">
-                                填寫問卷系統 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 flex items-center gap-2">
+                                風險與機會問卷系統
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 7: 保管品管理系統 -->
                 <div class="system-card border-glow-wrapper" data-category="governance" data-keywords="保管品 管理 系統 資產 物品 借用 lindawu">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/LINDAWU/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/LINDAWU/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-teal-500/10 rounded-full blur-2xl group-hover:bg-teal-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20">
-                                    #07 資產管理
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-boxes-stacked"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-300 mb-2">
-                                保管品管理系統
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                專用保管品、公務設備借還與公司資產管理平台，即時掌握物品狀態、保管人清冊與履歷紀錄。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1XoSzmcmmkwom7mg8G9dydu6w7AWehasE" alt="保管品管理系統" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 flex items-center gap-1.5">
-                                前往資產保管系統 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-300 flex items-center gap-2">
+                                保管品管理系統
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 8: 風險與機會問卷名冊 -->
                 <div class="system-card border-glow-wrapper" data-category="hr" data-keywords="差勤 請假 出勤 打卡 請假單 假務">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/TCFD-register/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/TCFD-register/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
-                                    #08 風險與機會問卷名冊
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-calendar-check"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 mb-2">
-                                風險與機會問卷名冊
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                自動生成風險與機會問卷名冊表。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1uzkt8kzKFg1fcQsE3A7IVkOSXEN_SDkR" alt="風險與機會問卷名冊" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1.5">
-                                前往資產名冊系統 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 flex items-center gap-2">
+                                風險與機會問卷名冊
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 9: 分機查詢系統 -->
                 <div class="system-card border-glow-wrapper" data-category="admin" data-keywords="會議室 預約 視訊 投影 設施 行政">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/phone/')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('https://janny0831.github.io/phone/')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20">
-                                    #09 分機查詢系統
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-display"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors duration-300 mb-2">
-                                分機查詢系統
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                支援部門、姓名、分機號碼等模糊搜尋。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1Sf21e0KEqTvCNS-5CZC8PS26BDo_0cSM" alt="分機查詢系統" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 flex items-center gap-1.5">
-                                前往分機查詢系統 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors duration-300 flex items-center gap-2">
+                                分機查詢系統
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- ITEM 10: 新系統規劃中 -->
                 <div class="system-card border-glow-wrapper" data-category="admin" data-keywords="行政 表單 規章 文件 下載 制度 辦法">
-                    <div class="glass-panel tilt-card rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('#', '101010')">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('#', '新系統規劃中')">
                         <div class="absolute -top-12 -right-12 w-28 h-28 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all duration-500"></div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
-                                    #10 新系統規劃中
-                                </span>
-                                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
-                                    <i class="fa-solid fa-file-shield"></i>
-                                </div>
-                            </div>
-                            
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors duration-300 mb-2">
-                                新系統規劃中
-                            </h3>
-                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                                新系統規劃中。
-                            </p>
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1scCMKGSE-dqH6giFYSVSXA3Rj41olL1f" alt="新系統規劃中" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
                         </div>
 
-                        <div class="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-400 flex items-center gap-1.5">
-                                新系統規劃中 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </span>
-                            <span class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </span>
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors duration-300 flex items-center gap-2">
+                                新系統規劃中
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors duration-300"></i>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 11: 新系統規劃中 -->
+                <div class="system-card border-glow-wrapper" data-category="admin" data-keywords="行政 表單 規章 文件 下載 制度 辦法">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('#', '新系統規劃中')">
+                        <div class="absolute -top-12 -right-12 w-28 h-28 bg-violet-500/10 rounded-full blur-2xl group-hover:bg-violet-500/20 transition-all duration-500"></div>
+
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1scCMKGSE-dqH6giFYSVSXA3Rj41olL1f" alt="新系統規劃中" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
+                        </div>
+
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors duration-300 flex items-center gap-2">
+                                新系統規劃中
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors duration-300"></i>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 12: 新系統規劃中 -->
+                <div class="system-card border-glow-wrapper" data-category="admin" data-keywords="行政 表單 規章 文件 下載 制度 辦法">
+                    <div class="glass-panel tilt-card rounded-2xl p-4 h-full flex flex-col group cursor-pointer hover:shadow-xl relative overflow-hidden" onclick="openSystem('#', '新系統規劃中')">
+                        <div class="absolute -top-12 -right-12 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all duration-500"></div>
+
+                        <div class="-mx-4 -mt-4 mb-4 aspect-square overflow-hidden">
+                            <img src="https://lh3.googleusercontent.com/d/1scCMKGSE-dqH6giFYSVSXA3Rj41olL1f" alt="新系統規劃中" class="w-full h-full object-cover object-top transform transition-transform duration-500 ease-out group-hover:scale-125" onerror="this.parentElement.style.display='none'">
+                        </div>
+
+                        <div class="flex-grow flex items-center justify-center pt-4 pb-2">
+                            <h3 class="text-2xl font-bold text-center text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300 flex items-center gap-2">
+                                新系統規劃中
+                                <i class="fa-solid fa-arrow-up-right-from-square text-sm text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300"></i>
+                            </h3>
                         </div>
                     </div>
                 </div>
